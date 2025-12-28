@@ -1,48 +1,74 @@
-📊 Analisador de Extrato Bancário (com e sem IA)
+📊 Analisador de Extrato Bancário – FastAPI (com e sem IA)
 
-API desenvolvida em Python com FastAPI que recebe um extrato bancário em formato CSV e gera um resumo de gastos por categoria.
+Este projeto é uma API em Python usando FastAPI que recebe um extrato bancário em CSV e retorna um resumo dos gastos por categoria.
 
-O projeto apresenta duas abordagens para resolver o mesmo problema:
-uma baseada em regras fixas e outra utilizando Inteligência Artificial (Gemini).
+A ideia principal é mostrar duas formas de resolver o mesmo problema:
 
-📁 Estrutura do Projeto
+uma abordagem tradicional, baseada em regras
+
+uma abordagem moderna, utilizando Inteligência Artificial como apoio
+
+📁 Estrutura do Projeto (revisada)
+
+Estrutura simples e clara, pensada para facilitar a leitura de quem avalia o repositório:
 
 Sem-IA/
-  └── main.py
+└── main.py
 
 Com-IA/
-  └── main.py
+└── main.py
 
-🔹 Versão Sem IA
+Cada pasta representa uma abordagem diferente para o mesmo problema.
 
-Nesta versão, a categorização é feita por meio de regras manuais, utilizando palavras-chave presentes na descrição da despesa.
+🔹 Versão Sem IA (Regras Fixas)
 
-Exemplos de categorização:
+Nesta versão, a categorização das despesas é feita por regras manuais, usando palavras-chave presentes na descrição.
+
+Exemplos:
 
 UBER → Transporte
+
 IFOOD / MCDONALDS → Alimentação
+
 NETFLIX → Lazer
-Outros → Outros
 
-✅ Simples, rápido e previsível
-❌ Pouco flexível para novas descrições
+Qualquer outro caso → Outros
 
-🤖 Versão Com IA
+Pontos fortes:
 
-Nesta versão, a categorização é feita utilizando o Gemini (IA), que analisa a descrição da despesa e retorna a categoria mais adequada.
+Código simples e direto
 
-Estratégia utilizada:
+Fácil de entender e manter
 
-Prompt bem definido
+Resultado previsível
 
-Validação da resposta da IA
+Limitação:
 
-Regras de fallback em caso de erro ou resposta inválida
+Pouco flexível para descrições novas ou inesperadas
 
-✅ Mais flexível e inteligente
-A IA é utilizada como apoio, não como lógica principal
+🤖 Versão Com IA (Gemini)
 
-📄 Formato do CSV
+Nesta versão, a API utiliza Inteligência Artificial (Gemini) para interpretar a descrição da despesa e definir a categoria mais adequada.
+
+A IA não é usada como “mágica”, mas sim de forma controlada:
+
+prompt claro e objetivo
+
+validação da resposta retornada
+
+regras de fallback caso a IA falhe
+
+Resultado:
+
+Mais flexibilidade
+
+Melhor adaptação a descrições reais de extratos bancários
+
+Uso consciente de IA, sem perder controle da lógica
+
+📄 Formato do Arquivo CSV
+
+O arquivo enviado para a API deve seguir este padrão:
 
 Descricao,Valor
 Uber,R$13
@@ -50,32 +76,30 @@ McDonalds,R$81
 Cantina do Lucas,R$89
 99Pop,R$26
 
-▶️ Como Rodar o Projeto
+▶️ Como Executar o Projeto
 
-Instalar as dependências
+Instalar dependências:
 
-Sem IA
+Versão Sem IA
 pip install fastapi uvicorn pandas
 
-Com IA
+Versão Com IA
 pip install fastapi uvicorn google-generativeai
 
-🚀 Executar a API
-
+Executar a aplicação:
 uvicorn main:app --reload
 
-🌐 Acessar a documentação
-
+Acessar no navegador:
 http://127.0.0.1:8000/docs
 
 🎯 Objetivo do Projeto
 
-Projeto desenvolvido com foco em:
+Este projeto foi desenvolvido para praticar e demonstrar:
 
-FastAPI
+construção de APIs com FastAPI
 
-Processamento de arquivos CSV
+processamento de arquivos CSV
 
-Boas práticas de backend
+organização e clareza de código
 
-Uso consciente de Inteligência Artificial em aplicações reais
+uso responsável de Inteligência Artificial em aplicações reais
