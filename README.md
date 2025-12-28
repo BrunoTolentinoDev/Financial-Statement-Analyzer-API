@@ -91,4 +91,4 @@ O arquivo enviado deve seguir este padrão:
 
 **1. Instalar dependências:**
 ```bash
-pip install fastapi uvicorn pandas google-generativeai
+pip install fastapi uvicorn google-genai python-multipart
