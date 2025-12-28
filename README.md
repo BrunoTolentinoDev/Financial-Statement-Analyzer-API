@@ -1,11 +1,11 @@
-📊 Analisador de Extrato Bancário (com e sem IA)
+Analisador de Extrato Bancário (com e sem IA)
 
-API em Python com FastAPI que recebe um extrato bancário em CSV e gera um resumo de gastos por categoria.
+API em Python com FastAPI que recebe um extrato bancário em formato CSV e gera um resumo de gastos por categoria.
 
-O projeto possui duas abordagens para resolver o mesmo problema:
-uma usando regras fixas e outra utilizando Inteligência Artificial (Gemini).
+O projeto apresenta duas abordagens para resolver o mesmo problema:
+uma baseada em regras fixas e outra utilizando Inteligência Artificial (Gemini).
 
-📁 Estrutura
+Estrutura do Projeto
 
 Sem-IA/
 main.py
@@ -13,66 +13,66 @@ main.py
 Com-IA/
 main.py
 
-  Versão Sem IA
+Versão Sem IA
 
-A categorização é feita com regras manuais, usando palavras-chave.
+A categorização é feita por meio de regras manuais, utilizando palavras-chave presentes na descrição da despesa.
 
-Exemplos:
+Exemplos de categorização:
 
-UBER → Transporte
+UBER -> Transporte
+IFOOD / MCDONALDS -> Alimentação
+NETFLIX -> Lazer
+Outros -> Outros
 
-IFOOD / MCDONALDS → Alimentação
+Pontos positivos:
+Simples, rápido e previsível
 
-NETFLIX → Lazer
+Limitações:
+Pouco flexível para novas descrições
 
-Outros → Outros
+Versão Com IA
 
-✅ Simples, rápido e previsível
-❌ Pouco flexível para novas descrições
+A categorização é realizada utilizando o Gemini, que analisa a descrição da despesa e retorna a categoria mais adequada.
 
- Versão Com IA
-
-A categorização é feita com Gemini (IA) a partir da descrição da despesa.
-
+Estratégia utilizada:
 Prompt bem definido
-
 Validação da resposta da IA
+Regras de fallback em caso de erro ou resposta inválida
 
-Regras de fallback em caso de erro
+Pontos positivos:
+Mais flexível e inteligente
+A IA é utilizada como apoio, não como lógica principal
 
-✅ Mais flexível e inteligente
-  A IA é usada como apoio, não como lógica principal
-
- Formato do CSV
+Formato do CSV
 
 Descricao,Valor
-UBER VIAGEM,R$ 25,90
-MCDONALDS,R$ 42,50
+Uber,R$13
+McDonalds,R$81
+Cantina do Lucas,R$89
+99Pop,R$26
 
- Como rodar
+Como Rodar o Projeto
 
-Instalar dependências:
+Instalação das dependências
 
-Sem IA
+Versão Sem IA
 pip install fastapi uvicorn pandas
 
-Com IA
+Versão Com IA
 pip install fastapi uvicorn google-generativeai
 
-Rodar a API:
+Executar a API
+
 uvicorn main:app --reload
 
-Acessar:
+Acessar a documentação
+
 http://127.0.0.1:8000/docs
 
-🎯 Objetivo
+Objetivo do Projeto
 
-Projeto focado em:
-
+Projeto desenvolvido com foco em:
 FastAPI
-
-Processamento de CSV
-
+Processamento de arquivos CSV
 Boas práticas de backend
-
-Uso consciente de IA em aplicações reais
+Uso consciente de Inteligência Artificial em aplicações reais
