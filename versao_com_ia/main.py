@@ -1,116 +1,113 @@
-import pandas as pd
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from io import StringIO
-import google.generativeai as genai
+from fastapi import FastAPI, UploadFile, File
+import csv
+import io
 import os
+import re
+from google import genai
 
-# API para analisar extratos bancários e categorizar gastos usando IA
-app = FastAPI(
-    title="API de Análise de Gastos",
-    description="API para processar extratos bancários e categorizar gastos usando IA (Gemini)",
-    version="1.0.0"
-)
+GEMINI_API_KEY = "GEMINI_API_KEY"
 
-# le a chave da API do Gemini a partir da variável de ambiente
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
+model = "gemini-1.5-flash"
 
-# Impede a aplicação de rodar sem a chave configurada
-if not GEMINI_API_KEY:
-    raise RuntimeError(
-        "Variável de ambiente GEMINI_API_KEY não encontrada. "
-        "Configure sua chave da API do Gemini antes de rodar."
-    )
+app = FastAPI()
 
-# Configura o acesso à API do Gemini
-genai.configure(api_key=GEMINI_API_KEY)
+def limpar_valor(valor: str) -> float:
+    # Ajusta o formato do dinheiro para conseguir somar
+    valor = valor.replace("R$", "").replace(" ", "").replace(",", ".")
+    return float(valor)
 
-# modelo de IA usado para classificar os gastos
-model = genai.GenerativeModel("gemini-1.5-flash")
+def categoria_fallback(descricao: str) -> str:
+    # Regras simples caso a IA falhe
+    desc = descricao.lower()
 
-# Categorias que a IA pode retornar
-CATEGORIAS_PERMITIDAS = [
-    "Transporte",
-    "Alimentação",
-    "Moradia",
-    "Lazer",
-    "Compras",
-    "Saúde",
-    "Outros"
-]
+    if any(p in desc for p in ["uber", "99"]):
+        return "Transporte"
 
-# Usa a IA para identificar a categoria do gasto pela descrição
+    if any(p in desc for p in ["mcdonald", "cantina", "restaurante", "lanch"]):
+        return "Alimentação"
+
+    return "Outros"
+
 def categorizar_com_ia(descricao: str) -> str:
-    # Prompt simples enviado para a IA
+    # pergunta para o ia qual a melhor categoria
     prompt = f"""
-Classifique o gasto abaixo em apenas UMA das categorias:
-{", ".join(CATEGORIAS_PERMITIDAS)}
+Classifique a despesa abaixo em UMA das categorias:
+- Alimentação
+- Transporte
+- Moradia
+- Lazer
+- Saúde
+- Outros
 
-Gasto: "{descricao}"
+Responda apenas com o nome da categoria.
 
-Responda SOMENTE with o nome da categoria.
+Despesa: "{descricao}"
 """
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt
+        )
+
         categoria = response.text.strip()
 
-        # Garante que a resposta seja uma categoria válida
-        if categoria not in CATEGORIAS_PERMITIDAS:
-            return "Outros"
+        categorias_validas = [
+            "Alimentação",
+            "Transporte",
+            "Moradia",
+            "Lazer",
+            "Saúde",
+            "Outros"
+        ]
 
-        return categoria
+        if categoria in categorias_validas:
+            return categoria
+
+        return categoria_fallback(descricao)
 
     except Exception:
-        # Se a IA falhar, classifica como "Outros"
-        return "Outros"
+        return categoria_fallback(descricao)
 
-# Processa o extrato bancário enviado pelo usuário
-def processar_extrato(conteudo_csv: str) -> dict:
-    try:
-        df = pd.read_csv(StringIO(conteudo_csv))
-    except Exception:
-        raise ValueError("Erro ao ler o arquivo CSV")
-
-    # Verifica se o CSV tem as colunas necessárias
-    if "Descricao" not in df.columns or "Valor" not in df.columns:
-        raise ValueError("Colunas obrigatórias: Descricao, Valor")
-
-    try:
-        # Remove símbolos e converte os valores para número
-        df["Valor"] = (
-            df["Valor"]
-            .replace("[R$,]", "", regex=True)
-            .astype(float)
-        )
-    except Exception:
-        raise ValueError("Valores inválidos na coluna 'Valor'")
-
-    # Classifica cada gasto usando a IA
-    df["Categoria"] = df["Descricao"].apply(categorizar_com_ia)
-
-    # soma os valores por categoria
-    return df.groupby("Categoria")["Valor"].sum().to_dict()
-
-# Endpoint para upload do extrato bancário
 @app.post("/upload-extrato/")
 async def upload_extrato(file: UploadFile = File(...)):
-    # verifica se o arquivo enviado é CSV
-    if not file.filename.lower().endswith(".csv"):
-        raise HTTPException(
-            status_code=400,
-            detail="Envie um arquivo no formato CSV"
-        )
-
-    # Lê o conteúdo do arquivo
+    # le o arquivo enviado pelo usuário
     conteudo = await file.read()
+    texto = conteudo.decode("utf-8")
 
-    try:
-        resumo = processar_extrato(conteudo.decode("utf-8"))
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    reader = csv.DictReader(io.StringIO(texto))
 
-    # retorna o resumo dos gastos
+    resumo = {
+        "Alimentação": 0.0,
+        "Transporte": 0.0,
+        "Moradia": 0.0,
+        "Lazer": 0.0,
+        "Saúde": 0.0,
+        "Outros": 0.0
+    }
+
+    detalhes = []
+
+    for linha in reader:
+        # pega a descrição e o valor de cada linha do CSV
+        descricao = linha["Descricao"]
+        valor = limpar_valor(linha["Valor"])
+
+        # identifica a categoria usando a IA
+        categoria = categorizar_com_ia(descricao)
+
+        resumo[categoria] += valor
+
+        detalhes.append({
+            "descricao": descricao,
+            "valor": valor,
+            "categoria": categoria
+        })
+
+    # entrega o resultado final com o resumo e os itens
     return {
         "status": "sucesso",
-        "resumo_gastos": resumo
+        "resumo_gastos": resumo,
+        "detalhamento": detalhes
     }
