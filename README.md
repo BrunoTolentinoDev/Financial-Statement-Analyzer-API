@@ -1,5 +1,4 @@
-# 📊 Analisador de Extrato Bancário – FastAPI (com e sem IA)
-
+# 📊 API for analyzing bank statements and categorizing expenses using rule-based logic and AI.
 &nbsp;
 
 Este projeto é uma API em Python usando FastAPI que recebe um extrato bancário em CSV e retorna um resumo dos gastos por categoria.
@@ -18,7 +17,7 @@ A ideia principal é mostrar duas formas de resolver o mesmo problema: uma abord
 
 &nbsp;
 
-Estrutura simples e clara, pensada para facilitar a leitura:
+Estrutura simples e clara:
 
 - **versao_sem_ia/** -> main.py
 - **versao_com_ia/** -> main.py
@@ -33,7 +32,7 @@ Estrutura simples e clara, pensada para facilitar a leitura:
 
 &nbsp;
 
-Nesta versão, a categorização das despesas é feita por regras manuais, usando palavras-chave.
+Nesta versão, a categorização das despesas é feita por regras manuais, usando Dicionário.
 
 **Exemplos:**
 - UBER → Transporte
